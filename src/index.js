@@ -335,9 +335,6 @@ const ITEMS = {
     "Phantom Wolf Boots": {
       image: "./images/feet/phantom_wolf_boots.png",
     },
-    "Sabatons of the Field General": {
-      image: "./images/feet/sabatons_field_general.png",
-    },
     "Shadow Harvester Boots": {
       image: "./images/feet/shadow_harvester_boots.png",
     },
