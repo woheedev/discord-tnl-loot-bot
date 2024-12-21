@@ -11,10 +11,14 @@ import path from "path";
 
 dotenv.config();
 
+const AUTHORIZED_ROLES = {
+  LEADERSHIP: "1309271313398894643",
+  OFFICER: "1309284427553312769",
+};
+
 const AUTHORIZED_USERS = [
-  "107391298171891712", // Wohee
-  "95252353493499904", // Sovx
   "229660875424792576", // Bevu
+  "151506204500295680", // Cross
 ];
 
 const BACKGROUND_IMAGE = "./images/background.png"; // or .webp
@@ -432,7 +436,13 @@ const TRAITS = [
   "Wildling Bonus Damage",
 ];
 
-const isAuthorized = (userId) => AUTHORIZED_USERS.includes(userId);
+const isAuthorized = (userId, member) => {
+  if (AUTHORIZED_USERS.includes(userId)) return true;
+  for (const roleId of Object.values(AUTHORIZED_ROLES)) {
+    if (member.roles.cache.has(roleId)) return true;
+  }
+  return false;
+};
 
 async function createCompositeImage(foregroundPath, outputPath) {
   try {
@@ -558,7 +568,8 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 async function handleRoll(interaction) {
-  if (!isAuthorized(interaction.user.id)) {
+  const member = interaction.guild?.members.cache.get(interaction.user.id);
+  if (!isAuthorized(interaction.user.id, member)) {
     await interaction.reply({
       content: "You are not authorized to use this command.",
       ephemeral: true,
@@ -662,7 +673,8 @@ async function handleAutocomplete(interaction) {
 async function handleCommand(interaction) {
   if (interaction.commandName !== "listitem") return;
 
-  if (!isAuthorized(interaction.user.id)) {
+  const member = interaction.guild?.members.cache.get(interaction.user.id);
+  if (!isAuthorized(interaction.user.id, member)) {
     await interaction.reply({
       content: "You are not authorized to use this command.",
       ephemeral: true,
