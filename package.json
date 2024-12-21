@@ -1,0 +1,26 @@
+{
+    "name": "hazardous-loot-bot",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "Hazardous loot bot",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "bun run src/index.js",
+        "dev": "bun --watch run src/index.js",
+        "prod": "pm2 start src/index.js --name hazardous-loot-bot --interpreter bun",
+        "stop": "pm2 stop hazardous-loot-bot",
+        "restart": "pm2 restart hazardous-loot-bot",
+        "logs": "pm2 logs hazardous-loot-bot",
+        "status": "pm2 status",
+        "migrate": "bun run src/migration.js"
+    },
+    "dependencies": {
+        "chalk": "^5.3.0",
+        "discord.js": "^14.16.3",
+        "dotenv": "^16.4.7",
+        "sharp": "^0.33.5"
+    },
+    "engines": {
+        "bun": ">=1.0.0"
+    }
+}
