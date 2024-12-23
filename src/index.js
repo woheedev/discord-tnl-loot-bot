@@ -8,6 +8,7 @@ import chalk from "chalk";
 import sharp from "sharp";
 import { promises as fs } from "fs";
 import path from "path";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -114,31 +115,39 @@ const ROLE_TO_FORUM = {
 };
 
 const REACTION_EMOJIS = {
-  NEED_ITEM: "⭐",
-  NEED_UNLOCK: "🔓",
-  NEED_BASE: "🧬",
-  NEED_LITHO: "📚",
+  MAIN_ITEM: "🏅",
+  MAIN_UNLOCK: "🔓",
+  MAIN_TRAIT: "🧬",
+  OFF_ITEM: "🥈",
+  OFF_TRAIT: "🧪",
+  LITHO_GREED: "📖",
 };
 
 const EMOJI_DESCRIPTIONS = {
-  NEED_ITEM: "Need the item for your build",
-  NEED_UNLOCK: "Need to unlock a trait with this item",
-  NEED_BASE: "Need the base trait from this item",
-  NEED_LITHO: "Need for lithograph collection",
+  MAIN_ITEM: "Need the item for your main build",
+  MAIN_UNLOCK: "Need to unlock a trait for main build",
+  MAIN_TRAIT: "Need the base trait for main build",
+  OFF_ITEM: "Need the item for offbuild / pve",
+  OFF_TRAIT: "Need the base trait for offbuild / pve",
+  LITHO_GREED: "Litho collection or general greed",
 };
 
 const ROLL_OPTIONS = {
-  ITEM: "item",
-  UNLOCK: "unlock",
-  BASE: "base",
-  LITHO: "litho",
+  MAIN_ITEM: "mainitem",
+  MAIN_UNLOCK: "mainunlock",
+  MAIN_TRAIT: "maintrait",
+  OFF_ITEM: "offitem",
+  OFF_TRAIT: "offtrait",
+  LITHO_GREED: "lithogreed",
 };
 
 const ROLL_TO_EMOJI = {
-  [ROLL_OPTIONS.ITEM]: REACTION_EMOJIS.NEED_ITEM,
-  [ROLL_OPTIONS.UNLOCK]: REACTION_EMOJIS.NEED_UNLOCK,
-  [ROLL_OPTIONS.BASE]: REACTION_EMOJIS.NEED_BASE,
-  [ROLL_OPTIONS.LITHO]: REACTION_EMOJIS.NEED_LITHO,
+  [ROLL_OPTIONS.MAIN_ITEM]: REACTION_EMOJIS.MAIN_ITEM,
+  [ROLL_OPTIONS.MAIN_UNLOCK]: REACTION_EMOJIS.MAIN_UNLOCK,
+  [ROLL_OPTIONS.MAIN_TRAIT]: REACTION_EMOJIS.MAIN_TRAIT,
+  [ROLL_OPTIONS.OFF_ITEM]: REACTION_EMOJIS.OFF_ITEM,
+  [ROLL_OPTIONS.OFF_TRAIT]: REACTION_EMOJIS.OFF_TRAIT,
+  [ROLL_OPTIONS.LITHO_GREED]: REACTION_EMOJIS.LITHO_GREED,
 };
 
 const ITEMS = {
@@ -474,6 +483,17 @@ async function createCompositeImage(foregroundPath, outputPath) {
   }
 }
 
+const getSecureRandom = (min, max) => {
+  const range = max - min + 1;
+  // Generate 4 bytes for numbers up to 2^32
+  const maxNum = Math.floor(0xffffffff / range) * range;
+  let num;
+  do {
+    num = crypto.randomBytes(4).readUInt32BE(0);
+  } while (num >= maxNum);
+  return min + (num % range);
+};
+
 const getItemCategory = (itemName) => {
   for (const [category, items] of Object.entries(ITEMS)) {
     if (itemName in items) return category;
@@ -534,10 +554,12 @@ client.once("ready", async () => {
           type: ApplicationCommandOptionType.String,
           required: true,
           choices: [
-            { name: "item", value: ROLL_OPTIONS.ITEM },
-            { name: "unlock", value: ROLL_OPTIONS.UNLOCK },
-            { name: "trait", value: ROLL_OPTIONS.BASE },
-            { name: "litho", value: ROLL_OPTIONS.LITHO },
+            { name: "Main Item", value: ROLL_OPTIONS.MAIN_ITEM },
+            { name: "Main Unlock", value: ROLL_OPTIONS.MAIN_UNLOCK },
+            { name: "Main Trait", value: ROLL_OPTIONS.MAIN_TRAIT },
+            { name: "Off Item", value: ROLL_OPTIONS.OFF_ITEM },
+            { name: "Off Trait", value: ROLL_OPTIONS.OFF_TRAIT },
+            { name: "Litho/Greed", value: ROLL_OPTIONS.LITHO_GREED },
           ],
         },
       ],
@@ -618,7 +640,7 @@ async function handleRoll(interaction) {
     const rolls = users
       .map((user) => ({
         user: user,
-        roll: Math.floor(Math.random() * 100) + 1,
+        roll: getSecureRandom(1, 100),
       }))
       .sort((a, b) => b.roll - a.roll);
 
@@ -786,19 +808,23 @@ async function handleCommand(interaction) {
     await fs.unlink(compositeImagePath);
 
     await thread.send(`**React to this message based on your needs:**
-        ${REACTION_EMOJIS.NEED_ITEM} - ${EMOJI_DESCRIPTIONS.NEED_ITEM}
-        ${REACTION_EMOJIS.NEED_UNLOCK} - ${EMOJI_DESCRIPTIONS.NEED_UNLOCK}
-        ${REACTION_EMOJIS.NEED_BASE} - ${EMOJI_DESCRIPTIONS.NEED_BASE}
-        ${REACTION_EMOJIS.NEED_LITHO} - ${EMOJI_DESCRIPTIONS.NEED_LITHO}
-        
-        *Please react with only one emoji that best describes your need.*`);
+      ${REACTION_EMOJIS.MAIN_ITEM} - ${EMOJI_DESCRIPTIONS.MAIN_ITEM}
+      ${REACTION_EMOJIS.MAIN_UNLOCK} - ${EMOJI_DESCRIPTIONS.MAIN_UNLOCK}
+      ${REACTION_EMOJIS.MAIN_TRAIT} - ${EMOJI_DESCRIPTIONS.MAIN_TRAIT}
+      ${REACTION_EMOJIS.OFF_ITEM} - ${EMOJI_DESCRIPTIONS.OFF_ITEM}
+      ${REACTION_EMOJIS.OFF_TRAIT} - ${EMOJI_DESCRIPTIONS.OFF_TRAIT}
+      ${REACTION_EMOJIS.LITHO_GREED} - ${EMOJI_DESCRIPTIONS.LITHO_GREED}
+      
+      *Please react with only one emoji that best describes your need.*`);
 
     // Add reactions to the instruction message instead of first post
     const instructionMsg = (await thread.messages.fetch()).first();
-    await instructionMsg.react(REACTION_EMOJIS.NEED_ITEM);
-    await instructionMsg.react(REACTION_EMOJIS.NEED_UNLOCK);
-    await instructionMsg.react(REACTION_EMOJIS.NEED_BASE);
-    await instructionMsg.react(REACTION_EMOJIS.NEED_LITHO);
+    await instructionMsg.react(REACTION_EMOJIS.MAIN_ITEM);
+    await instructionMsg.react(REACTION_EMOJIS.MAIN_UNLOCK);
+    await instructionMsg.react(REACTION_EMOJIS.MAIN_TRAIT);
+    await instructionMsg.react(REACTION_EMOJIS.OFF_ITEM);
+    await instructionMsg.react(REACTION_EMOJIS.OFF_TRAIT);
+    await instructionMsg.react(REACTION_EMOJIS.LITHO_GREED);
 
     await interaction.editReply({
       content: `Item listed successfully in ${thread}`,
