@@ -14,13 +14,9 @@ dotenv.config();
 
 const AUTHORIZED_ROLES = {
   LEADERSHIP: "1309271313398894643",
-  OFFICER: "1309284427553312769",
+  //OFFICER: "1309284427553312769",
+  LOOTCOUNCIL: "1322046352410279987",
 };
-
-const AUTHORIZED_USERS = [
-  "229660875424792576", // Bevu
-  "151506204500295680", // Cross
-];
 
 const BACKGROUND_IMAGE = "./images/background.png"; // or .webp
 const TEMP_DIR = "./temp";
@@ -41,21 +37,21 @@ const ITEM_CATEGORIES = {
 
 const ROLE_TO_FORUM = {
   "1315072149173698580": {
-    channel: "LOOT_CHANNEL_ID",
-    enabled: false,
+    channel: "1322045914088472586",
+    enabled: true,
     name: "Tsunami",
     tags: {
-      [ITEM_CATEGORIES.WEAPON]: "TAG_ID_1",
-      [ITEM_CATEGORIES.HEAD]: "TAG_ID_2",
-      [ITEM_CATEGORIES.CLOAK]: "TAG_ID_3",
-      [ITEM_CATEGORIES.CHEST]: "TAG_ID_4",
-      [ITEM_CATEGORIES.HANDS]: "TAG_ID_5",
-      [ITEM_CATEGORIES.LEGS]: "TAG_ID_6",
-      [ITEM_CATEGORIES.FEET]: "TAG_ID_7",
-      [ITEM_CATEGORIES.NECKLACE]: "TAG_ID_8",
-      [ITEM_CATEGORIES.BRACELET]: "TAG_ID_9",
-      [ITEM_CATEGORIES.RING]: "TAG_ID_10",
-      [ITEM_CATEGORIES.BELT]: "TAG_ID_11",
+      [ITEM_CATEGORIES.WEAPON]: "1322047535463927960",
+      [ITEM_CATEGORIES.HEAD]: "1322047546839007295",
+      [ITEM_CATEGORIES.CLOAK]: "1322047559199621221",
+      [ITEM_CATEGORIES.CHEST]: "1322047569894838293",
+      [ITEM_CATEGORIES.HANDS]: "1322047583123673179",
+      [ITEM_CATEGORIES.LEGS]: "1322047595224502383",
+      [ITEM_CATEGORIES.FEET]: "1322047605525450903",
+      [ITEM_CATEGORIES.NECKLACE]: "1322047622546194442",
+      [ITEM_CATEGORIES.BRACELET]: "1322047636429344799",
+      [ITEM_CATEGORIES.RING]: "1322047650094125118",
+      [ITEM_CATEGORIES.BELT]: "1322047663218102352",
     },
   },
   "1315071746721976363": {
@@ -119,6 +115,7 @@ const REACTION_EMOJIS = {
   MAIN_UNLOCK: "🔓",
   MAIN_TRAIT: "🧬",
   OFF_ITEM: "🥈",
+  OFF_UNLOCK: "🔑",
   OFF_TRAIT: "🧪",
   LITHO_GREED: "📖",
 };
@@ -128,6 +125,7 @@ const EMOJI_DESCRIPTIONS = {
   MAIN_UNLOCK: "Need to unlock a trait for main build",
   MAIN_TRAIT: "Need the base trait for main build",
   OFF_ITEM: "Need the item for offbuild / pve",
+  OFF_UNLOCK: "Need to unlock a trait for offbuild / pve",
   OFF_TRAIT: "Need the base trait for offbuild / pve",
   LITHO_GREED: "Litho collection or general greed",
 };
@@ -137,6 +135,7 @@ const ROLL_OPTIONS = {
   MAIN_UNLOCK: "mainunlock",
   MAIN_TRAIT: "maintrait",
   OFF_ITEM: "offitem",
+  OFF_UNLOCK: "offunlock",
   OFF_TRAIT: "offtrait",
   LITHO_GREED: "lithogreed",
 };
@@ -146,6 +145,7 @@ const ROLL_TO_EMOJI = {
   [ROLL_OPTIONS.MAIN_UNLOCK]: REACTION_EMOJIS.MAIN_UNLOCK,
   [ROLL_OPTIONS.MAIN_TRAIT]: REACTION_EMOJIS.MAIN_TRAIT,
   [ROLL_OPTIONS.OFF_ITEM]: REACTION_EMOJIS.OFF_ITEM,
+  [ROLL_OPTIONS.OFF_UNLOCK]: REACTION_EMOJIS.OFF_UNLOCK,
   [ROLL_OPTIONS.OFF_TRAIT]: REACTION_EMOJIS.OFF_TRAIT,
   [ROLL_OPTIONS.LITHO_GREED]: REACTION_EMOJIS.LITHO_GREED,
 };
@@ -443,7 +443,6 @@ const TRAITS = [
 ];
 
 const isAuthorized = (userId, member) => {
-  if (AUTHORIZED_USERS.includes(userId)) return true;
   for (const roleId of Object.values(AUTHORIZED_ROLES)) {
     if (member.roles.cache.has(roleId)) return true;
   }
@@ -554,12 +553,34 @@ client.once("ready", async () => {
           type: ApplicationCommandOptionType.String,
           required: true,
           choices: [
-            { name: "Main Item", value: ROLL_OPTIONS.MAIN_ITEM },
-            { name: "Main Unlock", value: ROLL_OPTIONS.MAIN_UNLOCK },
-            { name: "Main Trait", value: ROLL_OPTIONS.MAIN_TRAIT },
-            { name: "Off Item", value: ROLL_OPTIONS.OFF_ITEM },
-            { name: "Off Trait", value: ROLL_OPTIONS.OFF_TRAIT },
-            { name: "Litho/Greed", value: ROLL_OPTIONS.LITHO_GREED },
+            {
+              name: `${REACTION_EMOJIS.MAIN_ITEM} Main Item`,
+              value: ROLL_OPTIONS.MAIN_ITEM,
+            },
+            {
+              name: `${REACTION_EMOJIS.MAIN_UNLOCK} Main Unlock`,
+              value: ROLL_OPTIONS.MAIN_UNLOCK,
+            },
+            {
+              name: `${REACTION_EMOJIS.MAIN_TRAIT} Main Trait`,
+              value: ROLL_OPTIONS.MAIN_TRAIT,
+            },
+            {
+              name: `${REACTION_EMOJIS.OFF_ITEM} Off Item`,
+              value: ROLL_OPTIONS.OFF_ITEM,
+            },
+            {
+              name: `${REACTION_EMOJIS.OFF_UNLOCK} Off Unlock`,
+              value: ROLL_OPTIONS.OFF_UNLOCK,
+            },
+            {
+              name: `${REACTION_EMOJIS.OFF_TRAIT} Off Trait`,
+              value: ROLL_OPTIONS.OFF_TRAIT,
+            },
+            {
+              name: `${REACTION_EMOJIS.LITHO_GREED} Litho/Greed`,
+              value: ROLL_OPTIONS.LITHO_GREED,
+            },
           ],
         },
       ],
@@ -812,6 +833,7 @@ async function handleCommand(interaction) {
       ${REACTION_EMOJIS.MAIN_UNLOCK} - ${EMOJI_DESCRIPTIONS.MAIN_UNLOCK}
       ${REACTION_EMOJIS.MAIN_TRAIT} - ${EMOJI_DESCRIPTIONS.MAIN_TRAIT}
       ${REACTION_EMOJIS.OFF_ITEM} - ${EMOJI_DESCRIPTIONS.OFF_ITEM}
+      ${REACTION_EMOJIS.OFF_UNLOCK} - ${EMOJI_DESCRIPTIONS.OFF_UNLOCK}
       ${REACTION_EMOJIS.OFF_TRAIT} - ${EMOJI_DESCRIPTIONS.OFF_TRAIT}
       ${REACTION_EMOJIS.LITHO_GREED} - ${EMOJI_DESCRIPTIONS.LITHO_GREED}
       
@@ -823,6 +845,7 @@ async function handleCommand(interaction) {
     await instructionMsg.react(REACTION_EMOJIS.MAIN_UNLOCK);
     await instructionMsg.react(REACTION_EMOJIS.MAIN_TRAIT);
     await instructionMsg.react(REACTION_EMOJIS.OFF_ITEM);
+    await instructionMsg.react(REACTION_EMOJIS.OFF_UNLOCK);
     await instructionMsg.react(REACTION_EMOJIS.OFF_TRAIT);
     await instructionMsg.react(REACTION_EMOJIS.LITHO_GREED);
 
