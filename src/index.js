@@ -161,8 +161,8 @@ const ITEMS = {
     "Blessed Templar Helmet": {
       image: "./images/head/blessed_templar_helmet.png",
     },
-    "Guilded Raven Mask": {
-      image: "./images/head/guilded_raven_mask.png",
+    "Gilded Raven Mask": {
+      image: "./images/head/gilded_raven_mask.png",
     },
     "Helm of the Field General": {
       image: "./images/head/helm_field_general.png",
