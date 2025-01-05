@@ -38,7 +38,7 @@ const ITEM_CATEGORIES = {
 const ROLE_TO_FORUM = {
   "1315072149173698580": {
     channel: "1322045914088472586",
-    enabled: true,
+    enabled: false,
     name: "Tsunami",
     tags: {
       [ITEM_CATEGORIES.WEAPON]: "1322047535463927960",
